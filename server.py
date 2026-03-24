@@ -425,7 +425,7 @@ async def admin_login(request: Request, response: Response):
     
     # Hardcoded admin credentials (in production, use hashed passwords)
     ADMIN_CREDENTIALS = {
-        "admin@vigyaankart.com": "Admin@123",
+        "admin@vigyaankart.com": "Jaikrish@321#",
         "admin": "admin123"
     }
     
