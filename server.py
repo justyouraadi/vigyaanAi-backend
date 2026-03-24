@@ -130,6 +130,7 @@ class Ebook(BaseModel):
     what_you_learn: List[str] = []
     is_active: bool = True
     countdown_hours: int = 24
+    purchase_link: str = ""
     copies_sold: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -150,6 +151,7 @@ class EbookCreate(BaseModel):
     target_audience: str = ""
     what_you_learn: List[str] = []
     countdown_hours: int = 24
+    purchase_link: str = ""
 
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -284,6 +286,18 @@ class VideoTestimonial(BaseModel):
     video_path: str = ""
     embed_url: str = ""
     quote: str = ""
+    rating: int = 5
+    is_published: bool = True
+    order: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Review(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    review_id: str = Field(default_factory=lambda: f"rev_{uuid.uuid4().hex[:8]}")
+    name: str
+    role: str = ""
+    image: str = ""
+    text: str = ""
     rating: int = 5
     is_published: bool = True
     order: int = 0
@@ -1870,6 +1884,55 @@ async def admin_upload_video(request: Request, file: UploadFile = File(...), ses
     result = put_object(path, data, mime_map.get(ext, "video/mp4"))
     return {"path": result["path"], "filename": file.filename, "size": len(data)}
 
+# ===================== REVIEW ROUTES =====================
+
+@api_router.get("/reviews")
+async def get_reviews():
+    """Get published reviews for the landing page"""
+    reviews = await db.reviews.find(
+        {"is_published": True}, {"_id": 0}
+    ).sort("order", 1).to_list(50)
+    return reviews
+
+@admin_router.get("/reviews")
+async def admin_get_reviews(request: Request, session_token: Optional[str] = Cookie(None)):
+    """Get all reviews for admin"""
+    await require_admin(request, session_token)
+    reviews = await db.reviews.find({}, {"_id": 0}).sort("order", 1).to_list(100)
+    return reviews
+
+@admin_router.post("/reviews")
+async def admin_create_review(request: Request, session_token: Optional[str] = Cookie(None)):
+    """Create a review"""
+    await require_admin(request, session_token)
+    body = await request.json()
+    r = Review(**body)
+    doc = r.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.reviews.insert_one(doc)
+    return {"review_id": r.review_id, "message": "Review created"}
+
+@admin_router.put("/reviews/{review_id}")
+async def admin_update_review(review_id: str, request: Request, session_token: Optional[str] = Cookie(None)):
+    """Update a review"""
+    await require_admin(request, session_token)
+    body = await request.json()
+    body.pop("review_id", None)
+    body.pop("created_at", None)
+    result = await db.reviews.update_one({"review_id": review_id}, {"$set": body})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Review not found")
+    return {"message": "Review updated"}
+
+@admin_router.delete("/reviews/{review_id}")
+async def admin_delete_review(review_id: str, request: Request, session_token: Optional[str] = Cookie(None)):
+    """Delete a review"""
+    await require_admin(request, session_token)
+    result = await db.reviews.delete_one({"review_id": review_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Review not found")
+    return {"message": "Review deleted"}
+
 # ===================== SEED DATA =====================
 
 @api_router.post("/seed-video-testimonials")
@@ -1907,6 +1970,39 @@ async def seed_video_testimonials():
         doc['created_at'] = doc['created_at'].isoformat()
         await db.video_testimonials.insert_one(doc)
     return {"message": f"Seeded {len(samples)} video testimonials"}
+
+@api_router.post("/seed-reviews")
+async def seed_reviews():
+    """Seed initial text reviews"""
+    existing = await db.reviews.count_documents({})
+    if existing > 0:
+        return {"message": "Reviews already seeded"}
+    samples = [
+        {
+            "name": "Rahul Sharma", "role": "Career Counselor",
+            "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
+            "text": "The Career Counsellor Blueprint changed my life. I went from a 9-5 job to earning ₹8L/month within 6 months.",
+            "rating": 5, "order": 1
+        },
+        {
+            "name": "Priya Patel", "role": "Import-Export Business Owner",
+            "image": "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=100",
+            "text": "Started my import business with zero knowledge. Now doing ₹20L+ monthly revenue thanks to this guide.",
+            "rating": 5, "order": 2
+        },
+        {
+            "name": "Amit Kumar", "role": "Data Scientist",
+            "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100",
+            "text": "The interview guide helped me crack interviews at top MNCs. Got a 3x salary hike!",
+            "rating": 5, "order": 3
+        }
+    ]
+    for s in samples:
+        r = Review(**s)
+        doc = r.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.reviews.insert_one(doc)
+    return {"message": f"Seeded {len(samples)} reviews"}
 
 @api_router.post("/seed-ebooks")
 async def seed_ebooks():
@@ -2212,3 +2308,11 @@ async def startup_init():
         logger.info("Object storage initialized")
     except Exception as e:
         logger.warning(f"Storage init deferred: {e}")
+    # Seed reviews if none exist
+    try:
+        review_count = await db.reviews.count_documents({})
+        if review_count == 0:
+            await seed_reviews()
+            logger.info("Seeded initial reviews")
+    except Exception as e:
+        logger.warning(f"Review seeding deferred: {e}")

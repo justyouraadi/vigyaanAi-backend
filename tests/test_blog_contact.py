@@ -157,7 +157,7 @@ class TestAdminAuth:
         """Test POST /api/auth/admin-login with valid credentials"""
         payload = {
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         }
         response = requests.post(
             f"{BASE_URL}/api/auth/admin-login",
@@ -195,7 +195,7 @@ class TestAdminBlogManagement:
         """Get admin authentication token"""
         payload = {
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         }
         response = requests.post(
             f"{BASE_URL}/api/auth/admin-login",
@@ -328,7 +328,7 @@ class TestAdminAnalytics:
         """Get admin authentication token"""
         payload = {
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         }
         response = requests.post(
             f"{BASE_URL}/api/auth/admin-login",

@@ -32,7 +32,7 @@ class TestAdminAuth:
         """Test admin login with valid credentials"""
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200
         data = response.json()
@@ -60,7 +60,7 @@ class TestAdminDashboard:
         self.session.headers.update({"Content-Type": "application/json"})
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200, "Admin login failed"
         
@@ -117,7 +117,7 @@ class TestPaymentManagement:
         self.session.headers.update({"Content-Type": "application/json"})
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200, "Admin login failed"
         
@@ -172,7 +172,7 @@ class TestEbookSalesAnalytics:
         self.session.headers.update({"Content-Type": "application/json"})
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200, "Admin login failed"
         
@@ -205,7 +205,7 @@ class TestFileUploads:
         self.session = requests.Session()
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200, "Admin login failed"
         
@@ -260,7 +260,7 @@ class TestCouponSystem:
         self.session.headers.update({"Content-Type": "application/json"})
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200, "Admin login failed"
         
@@ -334,7 +334,7 @@ class TestEbookManagement:
         self.session.headers.update({"Content-Type": "application/json"})
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200, "Admin login failed"
         
@@ -379,7 +379,7 @@ class TestBlogManagement:
         self.session.headers.update({"Content-Type": "application/json"})
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200, "Admin login failed"
         
@@ -409,7 +409,7 @@ class TestAffiliateSettings:
         self.session.headers.update({"Content-Type": "application/json"})
         response = self.session.post(f"{BASE_URL}/api/auth/admin-login", json={
             "email": "admin@vigyaankart.com",
-            "password": "Admin@123"
+            "password": "Jaikrish@321#"
         })
         assert response.status_code == 200, "Admin login failed"
         
