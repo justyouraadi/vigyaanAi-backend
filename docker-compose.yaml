@@ -2,8 +2,11 @@ services:
   mongodb:
     image: mongo:latest
     container_name: mongodb_container
-    ports:
-      - "27017:27017"
+    # REMOVED the ports section so it is no longer exposed to the internet.
+    # Added environment variables to enforce authentication.
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=SuperSecurePassword123! # Change this!
     volumes:
       - /home/azureuser/vigyaanai/mongo_data:/data/db
     restart: always
@@ -16,7 +19,8 @@ services:
     env_file:
       - .env
     environment:
-      - MONGO_URL=mongodb://mongodb:27017
+      # Updated MONGO_URL to include the new credentials
+      - MONGO_URL=mongodb://admin:SuperSecurePassword123!@mongodb:27017/?authSource=admin
       - DB_NAME=test_database
       - CORS_ORIGINS="*"
       - RAZORPAY_KEY_ID=rzp_test_demo123
@@ -35,11 +39,15 @@ services:
     environment:
       - ME_CONFIG_MONGODB_SERVER=mongodb
       - ME_CONFIG_MONGODB_PORT=27017
+      # Updated to match the new MongoDB credentials
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=SuperSecurePassword123!
+      # UI login credentials
       - ME_CONFIG_BASICAUTH_USERNAME=admin
       - ME_CONFIG_BASICAUTH_PASSWORD=admin123
     depends_on:
       - mongodb
     restart: always
 
-volumes:
-  mongo_data:
+# Removed the bottom `volumes: mongo_data:` declaration because 
+# you are using a direct host bind mount (/home/azureuser/...) above.
